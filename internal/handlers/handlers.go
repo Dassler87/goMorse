@@ -19,7 +19,22 @@ func ServeIndex(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	http.ServeFile(w, r, "../index.html")
+	// Определяем абсолютный путь к исполняемому файлу
+	executablePath, err := os.Executable()
+	if err != nil {
+		log.Printf("Ошибка определения пути к исполняемому файлу: %v", err)
+		http.Error(w, "Ошибка определения пути к файлу", http.StatusInternalServerError)
+		return
+	}
+	// Строим путь к файлу index.html относительно корня проекта
+	rootDirectory := filepath.Dir(executablePath)
+	indexHTMLPath := filepath.Join(rootDirectory, "..", "index.html")
+
+	// Подготавливаем заголовки ответа
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// Отправляем файл клиенту
+	http.ServeFile(w, r, indexHTMLPath)
 }
 
 // UploadHandler обрабатывает загрузку файла, конвертирует его содержимое и сохраняет результат
